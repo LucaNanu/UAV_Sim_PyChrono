@@ -2,10 +2,12 @@
 
 from .PID import PID, PIDGains, PIDLogger
 from .MRAC import MRAC, MRACGains, MRACLogger
+from .TwoLayerMRAC import TwoLayerMRAC, TwoLayerMRACGains, TwoLayerMRACLogger
 
 controller_classes = {
   'PID': (PIDGains, PID, PIDLogger),
   'MRAC': (MRACGains, MRAC, MRACLogger),
+  'TwoLayerMRAC': (TwoLayerMRACGains, TwoLayerMRAC, TwoLayerMRACLogger),
 }
 
 def instantiateController(controller_type: str, ode_input, flight_params, timestep):
