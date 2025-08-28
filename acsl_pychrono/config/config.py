@@ -4,11 +4,11 @@ from dataclasses import dataclass
 @dataclass
 class MissionConfig:
   # Total simulation duration in seconds
-  simulation_duration_seconds: float = 31.5
+  simulation_duration_seconds: float = 17.0 # 21.5
   # Run the simulator in Wrapper mode (more simulations automatically run sequentially)
   wrapper_flag: bool = False
   # If True, perform real-time rendering of the simulation with Irrlicht
-  visualization_flag: bool = False
+  visualization_flag: bool = True
   # Dynamic camera options:
   # "fixed"
   # "default",
@@ -23,7 +23,8 @@ class MissionConfig:
   # Controller types:
   # "PID",
   # "MRAC",
-  controller_type: str = "PID"
+  # "TwoLayerMRAC",
+  controller_type: str = "TwoLayerMRAC"
 
   # User-defined trajectory types:
   # "circular_trajectory",
@@ -35,7 +36,7 @@ class MissionConfig:
 
   # If the trajectory_type is "piecewise_polynomial_trajectory", then choose the trajectory file to run
   # Path relative to 'current_working_directory/params/user_defined_trajectory'
-  trajectory_data_path: str = "bean_trajectory0p6.json"
+  trajectory_data_path: str = "bean_trajectory0p2.json"
 
   # Time for which, after executing the "trajectory_data_path",
   # the vehicle is hovering before starting the landing phase
