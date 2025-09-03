@@ -135,7 +135,7 @@ class Logging:
     return git_info
 
   @staticmethod
-  def saveMatlabWorkspaceLog(log_dict, gains, sim_cfg: Cfg.SimulationConfig, git_info: dict | None = None):
+  def saveMatlabWorkspaceLog(log_dict, gains, sim_cfg: Cfg.SimulationConfig, git_info: dict or None = None):
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     dir_path = Logging.getOutputDir(sim_cfg)
     os.makedirs(dir_path, exist_ok=True)

@@ -13,7 +13,10 @@ class Visualization:
     vis = irr.ChVisualSystemIrrlicht()
     vis.AttachSystem(self.sim.m_sys)
     vis.SetWindowSize(1280,960) # (1024,768), (1536,1152)
-    vis.SetWindowTitle('X8-Copter - Controller: ' + self.sim.mission_config.controller_type)
+    if self.sim.vehicle_config.vehicle_type == "thruststand_uav":
+        vis.SetWindowTitle('ThrustStand UAV - Controller: ' + self.sim.mission_config.controller_type)
+    elif self.sim.vehicle_config.vehicle_type == "x8copter":
+        vis.SetWindowTitle('X8-Copter - Controller: ' + self.sim.mission_config.controller_type)
     vis.Initialize()
     vis.AddLogo(chrono.GetChronoDataPath() + 'logo_pychrono_alpha.png')
     vis.AddSkyBox()
@@ -59,11 +62,14 @@ class Visualization:
       self._add_camera_fpv()
     else:
       pass
-
+    
     self.sim.vis.Render()
     # Draw coordinate systems
     irr.drawCoordsys(self.sim.vis, self.sim.marker_pixhawk.GetAbsCoord(), 0.5)  # Pixhawk NED
+    irr.drawCoordsys(self.sim.vis, self.sim.marker_com.GetAbsCoord(), 0.2)  # Marker CoM
     irr.drawCoordsys(self.sim.vis, self.sim.global_coord, 1.0)                  # Global frame
+    for i in range(self.sim.n_mot): # Motor i frame
+        irr.drawCoordsys(self.sim.vis, self.sim.marker_motor[i].GetAbsCoord(), 1.0)
     self.sim.vis.EndScene()
     return True # Continue simulation
   

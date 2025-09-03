@@ -1,4 +1,4 @@
-import math
+# import math
 import numpy as np  
 from acsl_pychrono.control.outerloop_safetymech import OuterLoopSafetyMechanism
 from acsl_pychrono.control.PID.pid_gains import PIDGains
@@ -28,7 +28,10 @@ class PID(Control):
     self.state_phi_ref_diff = self.y[0:2]
     self.state_theta_ref_diff = self.y[2:4]
     self.integral_position_tracking = self.y[4:7]
-    self.integral_angular_error = self.y[7:10]
+    self.integral_e_rot = self.y[7:10] # Integral of 'e_rot' = (angular_velocity - omega_ref) 
+    self.integral_angular_error = self.y[10:13] # Integral of angular_error = attitude - attitude_ref
+    self.integral_e_omega_ref_cmd = self.y[13:16] #Integral of (omega_ref - omega_cmd)
+    self.omega_ref = self.y[16:19] # Reference model rotational dynamics
  
     # Compute translational position error
     self.translational_position_error = Control.computeTranslationalPositionError(
@@ -82,9 +85,11 @@ class PID(Control):
       self.pitch_ref,
       self.angular_position_ref_dot
     )
+        
+    self.e_rot = self.odein.angular_velocity - self.omega_ref
     
     # Compute Inner Loop
-    self.computeInnerLoop()
+    self.computeInnerLoop_mod()
 
     # Compute individual motor thrusts
     self.motor_thrusts = Control.computeMotorThrusts(self.fp, self.u1, self.u2, self.u3, self.u4)
@@ -97,7 +102,10 @@ class PID(Control):
     self.dy[0:2] = self.internal_state_differentiator_phi_ref_diff
     self.dy[2:4] = self.internal_state_differentiator_theta_ref_diff
     self.dy[4:7] = self.translational_position_error
-    self.dy[7:10] = self.angular_error
+    self.dy[7:10] = self.e_rot
+    self.dy[10:13] = self.angular_error
+    self.dy[13:16] = self.omega_ref - self.omega_cmd
+    self.dy[16:19] = self.omega_ref_dot
 
     return np.array(self.dy)
   
@@ -107,24 +115,6 @@ class PID(Control):
     """
     velocity_error = self.odein.translational_velocity_in_I - self.odein.translational_velocity_in_I_user
 
-    # Compute rotation matrices
-    (R_from_loc_to_glob,
-     R_from_glob_to_loc
-    ) = Control.computeRotationMatrices(self.odein.roll, self.odein.pitch, self.odein.yaw)
-    
-    translational_velocity_in_J = R_from_glob_to_loc * self.odein.translational_velocity_in_I
-    translational_velocity_in_J_norm = np.linalg.norm(R_from_glob_to_loc * self.odein.translational_velocity_in_I)
-
-    # Aerodynamic drag force compensation
-    drag_force_in_body = (
-      -0.5 * self.gains.air_density_estimated * self.gains.surface_area_estimated *
-      self.gains.drag_coefficient_matrix_estimated * translational_velocity_in_J * translational_velocity_in_J_norm
-    )
-    drag_force_in_inertial = R_from_loc_to_glob * drag_force_in_body
-
-    # Dynamic inversion term
-    dynamic_inversion = -drag_force_in_inertial 
-
     self.mu_tran_raw = (
       self.gains.mass_total_estimated * (
         - self.gains.KP_tran * self.translational_position_error
@@ -132,7 +122,6 @@ class PID(Control):
         - self.gains.KI_tran * self.integral_position_tracking
         + self.odein.translational_acceleration_in_I_user
       )
-      + dynamic_inversion
     ).reshape(3, 1)
 
   def computeInnerLoop(self):
@@ -158,6 +147,78 @@ class PID(Control):
     self.u2 = self.Moment[0].item()
     self.u3 = self.Moment[1].item()
     self.u4 = self.Moment[2].item()
+    
+  def computeOmegaCmdAndOmegaCmdDotInnerLoop(self):
+    Jacobian_matrix = Control.computeJacobian(self.odein.roll, self.odein.pitch)
 
-  def computePostIntegrationAlgorithm(self):
-    pass
+    Jacobian_matrix_dot = Control.computeJacobianDot(
+      self.odein.roll,
+      self.odein.pitch,
+      self.angular_position_dot[0],
+      self.angular_position_dot[1]
+    )
+
+    omega_cmd = Jacobian_matrix * (
+      - self.gains.KP_rot * self.angular_error 
+      - self.gains.KI_rot * self.integral_angular_error 
+      + self.angular_position_ref_dot
+    )
+    
+    omega_cmd_dot = (
+      Jacobian_matrix_dot * (
+        - self.gains.KP_rot * self.angular_error 
+        - self.gains.KI_rot * self.integral_angular_error 
+        + self.angular_position_ref_dot)
+      + Jacobian_matrix * (
+        - self.gains.KP_rot * self.angular_error_dot 
+        - self.gains.KI_rot * self.angular_error 
+        + self.angular_position_ref_ddot)
+    )
+
+    return omega_cmd, omega_cmd_dot
+  
+  def computeReferenceModelInnerLoop(self):
+    omega_ref_dot = (
+      - self.gains.K_P_omega_ref * (self.omega_ref - self.omega_cmd) 
+      - self.gains.K_I_omega_ref * self.integral_e_omega_ref_cmd
+      + self.omega_cmd_dot
+    )
+
+    return omega_ref_dot
+  
+  def computeReferenceCommandInputInnerLoop(self):
+    r_rot = (
+      self.gains.K_P_omega_ref * self.omega_cmd
+      - self.gains.K_I_omega_ref * self.integral_e_omega_ref_cmd
+      + self.omega_cmd_dot
+    )
+
+    return r_rot
+  
+  def computeMomentPIbaselineInnerLoop(self):
+    Moment_baseline_PI = -self.fp.I_matrix_estimated * (
+      self.gains.KP_rot_PI_baseline * self.e_rot
+      + self.gains.KI_rot_PI_baseline * self.integral_e_rot 
+      - self.omega_ref_dot
+    )
+
+    return Moment_baseline_PI
+    
+  def computeInnerLoop_mod(self):
+    """
+    Computes control moments (u2, u3, u4) for the inner loop.
+    """
+    
+    (self.omega_cmd,
+     self.omega_cmd_dot
+    ) = self.computeOmegaCmdAndOmegaCmdDotInnerLoop()
+    
+    self.omega_ref_dot = self.computeReferenceModelInnerLoop()
+
+    self.r_rot = self.computeReferenceCommandInputInnerLoop()
+
+    self.Moment_baseline_PI = self.computeMomentPIbaselineInnerLoop()
+
+    self.u2 = self.Moment_baseline_PI[0].item()
+    self.u3 = self.Moment_baseline_PI[1].item()
+    self.u4 = self.Moment_baseline_PI[2].item()

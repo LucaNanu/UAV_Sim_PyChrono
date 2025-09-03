@@ -15,6 +15,6 @@ def instantiateController(controller_type: str, ode_input, flight_params, timest
   GainsClass, ControllerClass, LoggerClass = controller_classes[controller_type]
   gains = GainsClass(flight_params)
   controller = ControllerClass(gains, ode_input, flight_params, timestep)
-  logger = LoggerClass(gains)
+  logger = LoggerClass(gains, vehicle_type=flight_params.vehicle_config.vehicle_type)
 
   return gains, controller, logger

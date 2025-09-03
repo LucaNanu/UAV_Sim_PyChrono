@@ -7,7 +7,7 @@ from acsl_pychrono.simulation.simulation import Simulation
 import acsl_pychrono.config.config as Cfg
 from acsl_pychrono.control.logging import Logging
 
-def runWrapperSimulation(sim_cfg: Cfg.SimulationConfig, git_info: dict | None = None):
+def runWrapperSimulation(sim_cfg: Cfg.SimulationConfig, git_info: dict or None = None):
   """Run a single wrapper simulation from a given configuration."""
   sim = Simulation(sim_cfg)
   simulateMission(sim, git_info)
@@ -31,7 +31,7 @@ def generateConfigForDensity(ball_density: float, wrapper_batch_dir: str) -> Cfg
 
   return sim_cfg
 
-def getMaxParallel(user_requested_cores: int | None = None) -> int:
+def getMaxParallel(user_requested_cores: int or None = None) -> int:
   """Return the safe number of parallel workers based on CPU availability."""
   available_cores = os.cpu_count() or 1 # Fallback to 1 if detection fails
   return min(user_requested_cores, available_cores) if user_requested_cores else available_cores
@@ -43,7 +43,7 @@ def generateWrapperBatchDir() -> str:
   month = datetime.now().strftime("%m")
   return os.path.join("logs", "wrapper", year, month, f"ws_{batch_timestamp}")
 
-def runParallelBatch(max_parallel: int | None = None):
+def runParallelBatch(max_parallel: int or None = None):
   """Generate configs and run simulations in parallel."""
   max_parallel = getMaxParallel(max_parallel)
   wrapper_batch_dir = generateWrapperBatchDir()

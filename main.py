@@ -1,4 +1,6 @@
+# %%
 import acsl_pychrono.executor as Executor
+
 
 def main():
   Executor.launchSimulation()

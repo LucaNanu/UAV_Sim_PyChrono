@@ -4,11 +4,11 @@ from dataclasses import dataclass
 @dataclass
 class MissionConfig:
   # Total simulation duration in seconds
-  simulation_duration_seconds: float = 31.5
+  simulation_duration_seconds: float = 33.2628 # 21.5
   # Run the simulator in Wrapper mode (more simulations automatically run sequentially)
   wrapper_flag: bool = False
   # If True, perform real-time rendering of the simulation with Irrlicht
-  visualization_flag: bool = False
+  visualization_flag: bool = True
   # Dynamic camera options:
   # "fixed"
   # "default",
@@ -18,8 +18,8 @@ class MissionConfig:
   # "fpv"
   camera_mode: str = "fixed"
   # Simulation timestep used by Chrono
-  timestep: float = 0.005 
-
+  timestep: float = 0.001
+  
   # Controller types:
   # "PID",
   # "MRAC",
@@ -36,10 +36,6 @@ class MissionConfig:
   # If the trajectory_type is "piecewise_polynomial_trajectory", then choose the trajectory file to run
   # Path relative to 'current_working_directory/params/user_defined_trajectory'
   trajectory_data_path: str = "bean_trajectory0p6.json"
-
-  # Time for which, after executing the "trajectory_data_path",
-  # the vehicle is hovering before starting the landing phase
-  hover_after_trajectory_time_seconds: float = 5.0
 
   # Flag to add or remove the payload from the simulation
   add_payload_flag: bool = False
@@ -63,7 +59,16 @@ class MissionConfig:
 @dataclass
 class VehicleConfig:
   # Path relative to 'current_working_directory/assets/vehicles'
-  model_relative_path: str = "x8copter/x8copter.py" 
+  # model_relative_path
+  # "thruststand_uav/thruststand_uav.py" 
+  # "x8copter/x8copter.py"
+  # "x8copter_original/x8copter.py"
+  model_relative_path: str = "x8copter/x8copter.py"
+  
+  # vehicle_type
+  # "thruststand_uav"
+  # "x8copter"
+  vehicle_type = str = "x8copter"
 
 @dataclass
 class EnvironmentConfig:

@@ -1,5 +1,4 @@
-# A PyChrono-Based High-Fidelity Simulator for UAVs
-
+# High-fidelity PyChrono-based Simulator
 [![BSD License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](LICENSE.txt)
 [![Website](https://img.shields.io/badge/Website-acslstack.com-green)](https://www.acslstack.com/)
 
@@ -28,6 +27,11 @@ This software currently offers two control solutions for the inner and outer loo
 For further details on these control architectures, refer to the publications found [here](https://www.acslstack.com/Journals).
 
 Future versions of the software will include additional control systems.
+
+### Available UAV assets
+1. X8 copter Original: Original version of ACSL Lab
+2. X8 copter modified for ThrustStand project: the generated .obj file is only 1 SolidWorks Part.
+3. ThrustStand UAV
 
 ## Maintenance Team
 

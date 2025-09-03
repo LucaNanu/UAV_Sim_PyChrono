@@ -1,13 +1,13 @@
 import math
 import numpy as np
 from numpy.typing import NDArray
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from acsl_pychrono.simulation.functions import rk4singlestep
 from acsl_pychrono.simulation.ode_input import OdeInput
 from acsl_pychrono.simulation.flight_params import FlightParams
 
-class Control(ABC):
+class Control:
   def __init__(self, odein: OdeInput) -> None:
     self.odein = odein
     self.y = None # Will be initialized in subclasses
@@ -27,13 +27,6 @@ class Control(ABC):
     """
     pass
 
-  @abstractmethod
-  def computePostIntegrationAlgorithm(self) -> None:
-    """
-    Each subclass must implement this method.
-    """
-    pass
-
   def integrateODEOneStepRK4(self):
     """
     Perform a single RK4 integration step using the current state.
@@ -49,7 +42,6 @@ class Control(ABC):
     """
     self.computeControlAlgorithm(ode_input)
     self.integrateODEOneStepRK4()
-    self.computePostIntegrationAlgorithm()
 
   @staticmethod
   def computeU1RollPitchRef(mu_x, mu_y, mu_z, mass_total_estimated, G_acc, yaw_ref):
@@ -178,7 +170,10 @@ class Control(ABC):
       T (8x1 np.array): thrusts for 8 motors
     """
     U = np.array([u1, u2, u3, u4])
-    motor_thrusts = np.matmul(fp.U_mat_inv, U).reshape(8,1) # array of thrust of each motor (T1, T2, T3, T4, T5, T6, T7, T8)
+    if fp.vehicle_config.vehicle_type == "thruststand_uav":
+        motor_thrusts = np.matmul(fp.U_mat_inv, U).reshape(4,1) # array of thrust of each motor (T1, T2, T3, T4)
+    elif fp.vehicle_config.vehicle_type == "x8copter":
+        motor_thrusts = np.matmul(fp.U_mat_inv, U).reshape(8,1) # array of thrust of each motor (T1, T2, T3, T4, T5, T6, T7, T8)
     return motor_thrusts
   
   @staticmethod

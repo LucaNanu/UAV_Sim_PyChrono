@@ -6,7 +6,7 @@ from acsl_pychrono.control.logging import Logging
 from acsl_pychrono.simulation.ode_input import OdeInput
 from acsl_pychrono.simulation.flight_params import FlightParams
 
-def simulateMission(sim: Simulation, git_info: dict | None = None):
+def simulateMission(sim: Simulation, git_info: dict or None = None):
   # Instantiation of classes
   flight_params = FlightParams()
   ode_input = OdeInput()
@@ -43,7 +43,7 @@ def simulateMission(sim: Simulation, git_info: dict | None = None):
     print(f"\n[ERROR] Simulation crashed: {e}")
     traceback.print_exc()
   finally:
-    print("\n[INFO] Saving logs before exit...")
+    print("[INFO] Saving logs before exit...")
     log_dict = logger.toDictionary()
     Logging.saveMatlabWorkspaceLog(
       log_dict,

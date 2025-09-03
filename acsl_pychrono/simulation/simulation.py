@@ -15,7 +15,6 @@ from acsl_pychrono.simulation.ode_input import OdeInput
 import acsl_pychrono.config.config as Cfg
 import acsl_pychrono.user_defined_trajectory as Traj
 from acsl_pychrono.simulation.utils import Utils
-from acsl_pychrono.control.control import Control
 
 class Simulation:
   def __init__(self, sim_cfg: Cfg.SimulationConfig = Cfg.SimulationConfig()) -> None:
@@ -27,8 +26,8 @@ class Simulation:
     # Chrono features
     self.m_ground = None
     self.m_frame: chrono.ChBody = chrono.ChBody()
-    self.m_box: chrono.ChBody = chrono.ChBody()
-    self.m_props: list[chrono.ChBody] = []
+    # self.m_box: chrono.ChBody = chrono.ChBody()
+    # self.m_props: list[chrono.ChBody] = []
     self.m_markers = []
     self.m_motors = []
 
@@ -42,6 +41,14 @@ class Simulation:
     self.vehicle_config: Cfg.VehicleConfig = sim_cfg.vehicle_config
     self.environment_config: Cfg.EnvironmentConfig = sim_cfg.environment_config
     self.wrapper_params: Cfg.WrapperParams = sim_cfg.wrapper_params
+    
+    if self.vehicle_config.vehicle_type == 'thruststand_uav':
+        self.n_mot = 4
+    elif self.vehicle_config.vehicle_type == 'x8copter':
+        self.n_mot = 4
+    
+    # Initialize flight params with correct vehicle type
+    self.flight_params = FlightParams(sim_cfg)
 
     # Additional initialization
     self.setUpSimulation()
@@ -57,8 +64,8 @@ class Simulation:
     self.loadMarkers()
     self.createAuxillaryCoordinateSystems()
     self.createFloor()
-    self.addPayload()
-    self.addMotors()
+    # self.addPayload()
+    # self.addMotors()
     self.m_frame.Accumulate_force(chrono.ChVectorD(0, 0, 0), chrono.VNULL, True)
 
   def setGravitationalAcceleration(self, flight_params: FlightParams):
@@ -78,49 +85,70 @@ class Simulation:
 
     self.exported_items = chrono.ImportSolidWorksSystem(modulename)
 
-    # # Print exported items
-    # for my_item in self.exported_items:
-    #   print(my_item.GetName())
-    # # Add items to the physical system
+    # Print exported items
+    for my_item in self.exported_items:
+      print(my_item.GetName())
+    # Add items to the physical system
     for my_item in self.exported_items:
       self.m_sys.Add(my_item)
 
   def loadBodies(self):
     m_ground = self.m_sys.SearchBody('ground')
-    if not m_ground:
-      sys.exit('Error: cannot find ground from its name in the C::E system!')    
-    self.m_frame = self.m_sys.SearchBody('drone_big_box-1')
-    if not self.m_frame:
-      sys.exit('Error: cannot find drone frame from its name in the C::E system!')
-    self.m_box = self.m_sys.SearchBody('box_big_200x200x100-1')
-    if not self.m_box:
-      sys.exit('Error: cannot find box from its name in the C::E system!')
-    self.m_props = []
-    for i in range(1, 9):
-      name = f'3_blade_prop-{i}'
-      prop = self.m_sys.SearchBody(name)
-      if not prop:
-        sys.exit(f'Error: cannot find {name} from its name in the C::E system!')
-      self.m_props.append(prop)
+    if m_ground:
+      print('Ground found!')
+    else:
+      sys.exit('Error: cannot find ground from its name in the C::E system!')
+
+    if self.vehicle_config.vehicle_type == 'thruststand_uav':
+        self.m_frame = self.m_sys.SearchBody('thruststand_uav-1')
+        if self.m_frame:
+          print('Frame found!')
+        else:
+          sys.exit('Error: cannot find drone frame from its name in the C::E system!')
+    elif self.vehicle_config.vehicle_type == 'x8copter':
+        self.m_frame = self.m_sys.SearchBody('x8_copter_big_box-1') 
+        # self.m_frame = self.m_sys.SearchBody('drone_big_box-1')
+        if self.m_frame:
+          print('Frame found!')
+        else:
+          sys.exit('Error: cannot find drone frame from its name in the C::E system!')
+          
+        # self.m_box = self.m_sys.SearchBody('box_big_200x200x100-1')
+        # if self.m_box:
+        #   print('Box found!')
+        # else:
+        #   sys.exit('Error: cannot find box from its name in the C::E system!')
+        
+        # self.m_props = []
+        # for i in range(1, 9):
+        #   name = f'3_blade_prop-{i}'
+        #   prop = self.m_sys.SearchBody(name)
+        #   if prop:
+        #     print(f'{name} found!')
+        #     self.m_props.append(prop)
+        #   else:
+        #     sys.exit(f'Error: cannot find {name} from its name in the C::E system!')
 
   def loadMarkers(self):
     """
     Assigning names to the Coordinate Systems/Markers imported from solidworks and checking if they are found
     """
     self.m_markers = []
-    for i in range(1, 9):
+    for i in range(1, self.n_mot + 1):
       name = f'Coordinate System{i}'
       marker = self.m_sys.SearchMarker(name)
-      if not marker:
+      if marker:
+        print(f'Marker_{i} found!')
+        self.m_markers.append(marker)
+      else:
         sys.exit(f'Error: cannot find marker{i} from its name in the C::E system!')
-      self.m_markers.append(marker)
 
   def addMotors(self):
     if not (self.m_frame and self.m_props and self.m_markers):
       sys.exit("Error: frame, props, and markers must be loaded before adding motors!")
 
     self.m_motors = []
-    for i in range(8):
+    for i in range(self.n_mot):
       frame = self.m_markers[i].GetAbsFrame()
       motor = chrono.ChLinkMotorRotationSpeed()
       motor.Initialize(self.m_props[i], self.m_frame, frame)
@@ -130,11 +158,16 @@ class Simulation:
       self.m_motors.append(motor)
 
   def getBodies(self):
-    return (
-      self.m_frame,
-      self.m_box,
-      *self.m_props
-    )
+    if self.vehicle_config.vehicle_type == "thruststand_uav":
+        return (
+          self.m_frame
+        )
+    elif self.vehicle_config.vehicle_type == "x8copter":
+        return (
+          self.m_frame,
+          self.m_box,
+          *self.m_props
+        )
 
   def getMarkers(self):
     return tuple(self.m_markers)
@@ -144,7 +177,7 @@ class Simulation:
 
   def loadEnvironmentModel(self):
     if not self.environment_config.include:
-      print("[INFO] Environment model loading skipped (config.environment.include=False).")
+      print("Environment model loading skipped (config.environment.include=False).")
       return
     
     # Prepend working directory and "/assets/environments"
@@ -187,9 +220,13 @@ class Simulation:
 
   def createAuxillaryCoordinateSystems(self):
     # position of the "pixhawk's center" wrt local frame
-    self.position_local_pixhawk = chrono.ChVectorD(0.0293, 0.04925, 0) 
+    if self.vehicle_config.vehicle_type == 'thruststand_uav':
+        # self.position_local_pixhawk = chrono.ChVectorD(0.0293, 0.04925, 0)
+        self.position_local_pixhawk = chrono.ChVectorD(0.00010337, 0.01518067, 0.00012454)
+    elif self.vehicle_config.vehicle_type == 'x8copter':
+        self.position_local_pixhawk = chrono.ChVectorD(0, 0, 0)
+        
     # position of the "pixhawk's center" wrt the COG of the drone frame
-    self.position_pixhawk_fromCOG = chrono.ChVectorD(-0.0214807964657055, 0.0779592340719906, -0.0000487571767365452) 
     # Global reference frame
     self.global_coord = chrono.ChCoordsysD(chrono.ChVectorD(0,0,0), chrono.ChQuaternionD(1,0,0,0)) 
     # Coordinate System Pixhawk (NED)
@@ -201,6 +238,14 @@ class Simulation:
       self.position_local_pixhawk,
       chrono.ChQuaternionD(1,0,0,0)
     ) 
+    
+    # Create the CoM reference frame
+    self.CoM_sys = chrono.ChCoordsysD(chrono.ChVectorD(-4.00500000000224e-05,-0.05773638,-0.00642219),chrono.ChQuaternionD(1,0,0,0))
+    self.marker_com =chrono.ChMarker()
+    self.marker_com.SetName('Coordinate System CoM')
+    self.m_frame.AddMarker(self.marker_com)
+    self.marker_com.Impose_Abs_Coord(self.CoM_sys)
+    
     # Create a local reference system with origin in pixhawk and with NED (North East Down) convention
     self.marker_pixhawk =chrono.ChMarker()
     self.marker_pixhawk.SetName('Coordinate System Pixhawk')
@@ -212,6 +257,15 @@ class Simulation:
     self.marker_pixhawk_2.SetName('Coordinate System Pixhawk Global Frame convention')
     self.m_frame.AddMarker(self.marker_pixhawk_2)
     self.marker_pixhawk_2.Impose_Abs_Coord(pixhawk_csys_2)
+    
+    # Create a local reference system with origin in motor i and with Global Frame convention (Y up)
+    self.marker_motor = []
+    for i in range(self.n_mot):
+        marker = chrono.ChMarker()
+        marker.SetName(f'Coordinate System motor{i}')
+        self.m_frame.AddMarker(marker)
+        marker.Impose_Abs_Coord(self.m_markers[i].GetAbsCoord())
+        self.marker_motor.append(marker)
 
     # Rotation matrix that represents a rotation of plus pi/2 (90 degrees) around the x-axis
     self.RR = chrono.ChMatrix33D()
@@ -221,7 +275,7 @@ class Simulation:
     self.RR.SetMatr(RRX_plusPI2)  # type: ignore
 
     # Identify Local reference system of Box
-    self.m_box_csys = self.m_box.GetFrame_REF_to_abs().GetCoord()
+    # self.m_box_csys = self.m_box.GetFrame_REF_to_abs().GetCoord()
     # Identify Local reference system of drone frame
     self.m_frame_csys = self.m_frame.GetFrame_REF_to_abs().GetCoord()
 
@@ -232,9 +286,14 @@ class Simulation:
     self.mfloor = chrono.ChBodyEasyBox(50, 0.1, 50, 1000,True,True, contact_material_floor)
     self.mfloor.SetName('Floor')
     self.mfloor.SetBodyFixed(True)
-    self.mfloor_Yposition = 0.3
+    if self.vehicle_config.vehicle_type == "thruststand_uav":
+        self.mfloor_Yposition = 0.1
+    elif self.vehicle_config.vehicle_type == "x8copter":
+        self.mfloor_Yposition = 0.5
     self.mfloor.SetPos(chrono.ChVectorD(0,-self.mfloor_Yposition,0))
-    self.mfloor.GetVisualShape(0).SetTexture(chrono.GetChronoDataFile("textures/light_gray.png"))
+    # self.mfloor.GetVisualShape(0).SetTexture(chrono.GetChronoDataFile("textures/light_gray.png"))
+    self.mfloor.GetVisualShape(0).SetTexture(chrono.GetChronoDataFile("textures/concrete.jpg"))
+    self.mfloor.SetCollide(True) # Enable collision
     self.m_sys.Add(self.mfloor)
 
   def addTwoSteelBallsPayload(self):
@@ -498,10 +557,10 @@ class Simulation:
     if not apply:
       return
     
-    applicaion_point = chrono.ChVectorD(-0.006329836449057219, -0.05730872796244302, 3.945863912075595e-05)
+    application_point = chrono.ChVectorD(-0.006329836449057219, -0.05730872796244302, 3.945863912075595e-05)
     self.m_frame.Accumulate_force(
       chrono.ChVectorD(*wind_force_vector), 
-      applicaion_point,
+      application_point,
       False
     )
 
@@ -522,21 +581,35 @@ class Simulation:
     controller.motor_thrusts = np.array(flight_params.motor_efficiency_matrix * controller.motor_thrusts)
   
   def applyMotorForces(self, controller, flight_params: FlightParams):
-    """Apply thrust forces from motors at predefined local positions wrt the drone frame."""    
-    # Define thrust application points
-    force_positions = (
-      flight_params.force_1_5_pos,
-      flight_params.force_2_6_pos,
-      flight_params.force_3_7_pos,
-      flight_params.force_4_8_pos
-    )
+    """Apply thrust forces from motors at predefined local positions wrt the drone frame."""  
+    if self.vehicle_config.vehicle_type == "thruststand_uav":
+        # Define thrust application points
+        force_positions = (
+          flight_params.force_1_pos,
+          flight_params.force_2_pos,
+          flight_params.force_3_pos,
+          flight_params.force_4_pos
+        )
+    
+        # Map motor indices to force positions
+        motor_to_pos_index = [0, 1, 2, 3]
+    elif self.vehicle_config.vehicle_type == "x8copter":
+        # Define thrust application points
+        force_positions = (
+          flight_params.force_1_5_pos,
+          flight_params.force_2_6_pos,
+          flight_params.force_3_7_pos,
+          flight_params.force_4_8_pos
+        )
 
-    # Map motor indices to force positions
-    motor_to_pos_index = [2, 3, 0, 1, 6, 7, 4, 5] # alternative [0, 1, 2, 3, 4, 5, 6, 7]
-
+        # Map motor indices to force positions
+        # motor_to_pos_index = [2, 3, 0, 1, 6, 7, 4, 5] # alternative [0, 1, 2, 3, 4, 5, 6, 7]
+        motor_to_pos_index = [0, 1, 2, 3, 4, 5, 6, 7]
+        
     for i, motor_idx in enumerate(motor_to_pos_index):
       force_vec = chrono.ChVectorD(0, controller.motor_thrusts[motor_idx][0], 0)
-      force_pos = force_positions[i % 4] # means (0, 1, 2, 3, 0, 1, 2, 3)
+      force_pos = force_positions[i % 4] # means (0, 1, 2, 3, 0, 1, 2, 3) or (0, 1, 2, 3)
+      print("Force motor ",motor_idx, ": ",force_vec, " N")
       self.m_frame.Accumulate_force(force_vec, force_pos, True)
 
   def applyPropellerReactionTorques(self, controller, flight_params: FlightParams):
@@ -547,12 +620,18 @@ class Simulation:
     # Compute angular velocities for each motor
     self.omega = np.sqrt(controller.motor_thrusts / flight_params.K_omega)
 
-     # Compute and apply torques
-    for i in range(8):
-      omega_squared = self.omega[i][0] ** 2
-      torque_y = flight_params.propellers_spin_directions[i] * omega_squared * flight_params.K_torque
-      torque = chrono.ChVectorD(0, torque_y, 0)
-      self.m_frame.Accumulate_torque(torque, True)
+    # Compute and apply torques
+    if self.vehicle_config.vehicle_type == "thruststand_uav":
+        for i in range(4):
+          torque_y = flight_params.propellers_spin_directions[i] * flight_params.c_t * controller.motor_thrusts[i,0]
+          torque = chrono.ChVectorD(0, torque_y, 0)
+          self.m_frame.Accumulate_torque(torque, True)
+    elif self.vehicle_config.vehicle_type == "x8copter":
+        for i in range(8):
+          omega_squared = self.omega[i][0] ** 2
+          torque_y = flight_params.propellers_spin_directions[i] * omega_squared * flight_params.K_torque
+          torque = chrono.ChVectorD(0, torque_y, 0)
+          self.m_frame.Accumulate_torque(torque, True)
 
   def setPropellerRotationalVelocity(self, flight_params: FlightParams):
     """
@@ -582,7 +661,7 @@ class Simulation:
       return
     
     if (self.mission_config.add_payload_flag and self.mission_config.payload_type == "two_steel_balls"):
-      drop_time = 3.7 # Time at which payloads should be dropped.
+      drop_time = 4.0 # Time at which payloads should be dropped.
       disable_duration = 0.15 # Time duration for which collisions are disabled after the drop.
 
       if (time_now > drop_time):
@@ -603,8 +682,8 @@ class Simulation:
     if not apply:
       return
 
-    failure_time = 6.5 # 4.5
-    motor_efficiencies = [0, 1, 1, 1, 1, 1, 1, 1]
+    failure_time = 1.0
+    motor_efficiencies = [1, 1, 0, 1, 1, 1, 0.3, 1]
     if (time_now > failure_time):
       flight_params.motor_efficiency_matrix = np.matrix(np.diag(motor_efficiencies))
 
@@ -647,7 +726,7 @@ class Simulation:
     ode_input: OdeInput,
     user_defined_trajectory: Traj.BaseUserDefinedTrajectory,
     gains,
-    controller: Control,
+    controller,
     logger
     ):
 
@@ -680,9 +759,9 @@ class Simulation:
 
     self.updateSystemStates(time_now)
     self.applyExternalForces()
+    self.runControllerIfStarted(time_now, simulation_time)
     self.handlePayloadMechanisms(time_now)
     self.handleFaults(time_now)
-    self.runControllerIfStarted(time_now, simulation_time)
 
     self.debugPrints(time_now, simulation_time)
 
@@ -713,6 +792,8 @@ class Simulation:
 
     # Execute the control algorithm
     self.controller.run(self.ode_input)
+    # Collect the log data
+    self.logger.collectData(self.controller, simulation_time)
 
     # Thrust saturation
     self.applyMotorThrustLimitsAndEfficiency(self.controller, self.flight_params)
@@ -721,16 +802,13 @@ class Simulation:
     # Apply propellers reaction torques around local yaw-axis
     self.applyPropellerReactionTorques(self.controller, self.flight_params)
     # Setting the propeller rotational velocities
-    self.setPropellerRotationalVelocity(self.flight_params)
-
-    # Collect the log data
-    self.logger.collectData(self.controller, simulation_time)
+    # self.setPropellerRotationalVelocity(self.flight_params)
 
   def handlePayloadMechanisms(self, time_now: float):
     # Payload Dropping
     self.handlePayloadDroppingBalls12(time_now, apply=False)
     # Dropping multiple balls one after the other
-    self.sequentiallyDropBalls(time_now, apply=False)
+    self.sequentiallyDropBalls(time_now, apply=True)
 
   def handleFaults(self, time_now: float):
     # Motor failure
