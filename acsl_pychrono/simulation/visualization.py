@@ -65,10 +65,10 @@ class Visualization:
     
     self.sim.vis.Render()
     # Draw coordinate systems
-    irr.drawCoordsys(self.sim.vis, self.sim.marker_pixhawk.GetAbsCoord(), 0.5)  # Pixhawk NED
+    # irr.drawCoordsys(self.sim.vis, self.sim.marker_pixhawk.GetAbsCoord(), 0.5)  # Pixhawk NED
     irr.drawCoordsys(self.sim.vis, self.sim.marker_com.GetAbsCoord(), 0.2)  # Marker CoM
-    irr.drawCoordsys(self.sim.vis, self.sim.global_coord, 1.0)                  # Global frame
-    for i in range(self.sim.n_mot): # Motor i frame
+    # irr.drawCoordsys(self.sim.vis, self.sim.global_coord, 1.0)                  # Global frame
+    for i in range(self.sim.n_mot_pos): # Motor i frame
         irr.drawCoordsys(self.sim.vis, self.sim.marker_motor[i].GetAbsCoord(), 1.0)
     self.sim.vis.EndScene()
     return True # Continue simulation

@@ -124,29 +124,29 @@ class PID(Control):
       )
     ).reshape(3, 1)
 
-  def computeInnerLoop(self):
-    """
-    Computes control moments (u2, u3, u4) for the inner loop.
-    """
-    # Compute gyroscopic term
-    gyro_term = np.cross(
-      self.odein.angular_velocity.ravel(),
-      (self.gains.I_matrix_estimated * self.odein.angular_velocity).ravel()
-    ).reshape(3,1)
+  # def computeInnerLoop(self):
+  #   """
+  #   Computes control moments (u2, u3, u4) for the inner loop.
+  #   """
+  #   # Compute gyroscopic term
+  #   gyro_term = np.cross(
+  #     self.odein.angular_velocity.ravel(),
+  #     (self.gains.I_matrix_estimated * self.odein.angular_velocity).ravel()
+  #   ).reshape(3,1)
 
-    # Compute feedback term
-    feedback_term = self.gains.I_matrix_estimated * (
-      - self.gains.KP_rot * self.angular_error
-      - self.gains.KD_rot * self.angular_error_dot
-      - self.gains.KI_rot * self.integral_angular_error
-      + self.angular_position_ref_ddot
-    ).reshape(3,1)
+  #   # Compute feedback term
+  #   feedback_term = self.gains.I_matrix_estimated * (
+  #     - self.gains.KP_rot * self.angular_error
+  #     - self.gains.KD_rot * self.angular_error_dot
+  #     - self.gains.KI_rot * self.integral_angular_error
+  #     + self.angular_position_ref_ddot
+  #   ).reshape(3,1)
     
-    self.Moment = gyro_term + feedback_term
+  #   self.Moment = gyro_term + feedback_term
 
-    self.u2 = self.Moment[0].item()
-    self.u3 = self.Moment[1].item()
-    self.u4 = self.Moment[2].item()
+  #   self.u2 = self.Moment[0].item()
+  #   self.u3 = self.Moment[1].item()
+  #   self.u4 = self.Moment[2].item()
     
   def computeOmegaCmdAndOmegaCmdDotInnerLoop(self):
     Jacobian_matrix = Control.computeJacobian(self.odein.roll, self.odein.pitch)
@@ -216,8 +216,16 @@ class PID(Control):
     self.omega_ref_dot = self.computeReferenceModelInnerLoop()
 
     self.r_rot = self.computeReferenceCommandInputInnerLoop()
+    
+    #   # Compute gyroscopic term
+    gyro_term = np.cross(
+      self.odein.angular_velocity.ravel(),
+      (self.gains.I_matrix_estimated * self.odein.angular_velocity).ravel()
+    ).reshape(3,1)
 
-    self.Moment_baseline_PI = self.computeMomentPIbaselineInnerLoop()
+    feedback_term = self.computeMomentPIbaselineInnerLoop()
+    
+    self.Moment_baseline_PI = feedback_term + gyro_term
 
     self.u2 = self.Moment_baseline_PI[0].item()
     self.u3 = self.Moment_baseline_PI[1].item()

@@ -43,9 +43,9 @@ class Simulation:
     self.wrapper_params: Cfg.WrapperParams = sim_cfg.wrapper_params
     
     if self.vehicle_config.vehicle_type == 'thruststand_uav':
-        self.n_mot = 4
+        self.n_mot_pos = 4
     elif self.vehicle_config.vehicle_type == 'x8copter':
-        self.n_mot = 4
+        self.n_mot_pos = 8
     
     # Initialize flight params with correct vehicle type
     self.flight_params = FlightParams(sim_cfg)
@@ -134,7 +134,7 @@ class Simulation:
     Assigning names to the Coordinate Systems/Markers imported from solidworks and checking if they are found
     """
     self.m_markers = []
-    for i in range(1, self.n_mot + 1):
+    for i in range(1, self.n_mot_pos + 1):
       name = f'Coordinate System{i}'
       marker = self.m_sys.SearchMarker(name)
       if marker:
@@ -148,7 +148,7 @@ class Simulation:
       sys.exit("Error: frame, props, and markers must be loaded before adding motors!")
 
     self.m_motors = []
-    for i in range(self.n_mot):
+    for i in range(self.n_mot_pos):
       frame = self.m_markers[i].GetAbsFrame()
       motor = chrono.ChLinkMotorRotationSpeed()
       motor.Initialize(self.m_props[i], self.m_frame, frame)
@@ -221,10 +221,11 @@ class Simulation:
   def createAuxillaryCoordinateSystems(self):
     # position of the "pixhawk's center" wrt local frame
     if self.vehicle_config.vehicle_type == 'thruststand_uav':
-        # self.position_local_pixhawk = chrono.ChVectorD(0.0293, 0.04925, 0)
         self.position_local_pixhawk = chrono.ChVectorD(0.00010337, 0.01518067, 0.00012454)
+        self.CoM_sys = chrono.ChCoordsysD(chrono.ChVectorD(0.00010337,0.01518067,0.00012454),chrono.ChQuaternionD(1,0,0,0))
     elif self.vehicle_config.vehicle_type == 'x8copter':
         self.position_local_pixhawk = chrono.ChVectorD(0, 0, 0)
+        self.CoM_sys = chrono.ChCoordsysD(chrono.ChVectorD(-4.00500000000224e-05,-0.05773638,-0.00642219),chrono.ChQuaternionD(1,0,0,0))
         
     # position of the "pixhawk's center" wrt the COG of the drone frame
     # Global reference frame
@@ -240,7 +241,6 @@ class Simulation:
     ) 
     
     # Create the CoM reference frame
-    self.CoM_sys = chrono.ChCoordsysD(chrono.ChVectorD(-4.00500000000224e-05,-0.05773638,-0.00642219),chrono.ChQuaternionD(1,0,0,0))
     self.marker_com =chrono.ChMarker()
     self.marker_com.SetName('Coordinate System CoM')
     self.m_frame.AddMarker(self.marker_com)
@@ -260,7 +260,7 @@ class Simulation:
     
     # Create a local reference system with origin in motor i and with Global Frame convention (Y up)
     self.marker_motor = []
-    for i in range(self.n_mot):
+    for i in range(self.n_mot_pos):
         marker = chrono.ChMarker()
         marker.SetName(f'Coordinate System motor{i}')
         self.m_frame.AddMarker(marker)
@@ -582,33 +582,36 @@ class Simulation:
   
   def applyMotorForces(self, controller, flight_params: FlightParams):
     """Apply thrust forces from motors at predefined local positions wrt the drone frame."""  
+        # Define thrust application points --> USE MARKER MOTORS, since they compute the right distances from the COM
     if self.vehicle_config.vehicle_type == "thruststand_uav":
-        # Define thrust application points
         force_positions = (
-          flight_params.force_1_pos,
-          flight_params.force_2_pos,
-          flight_params.force_3_pos,
-          flight_params.force_4_pos
+            self.marker_motor[0].GetPos(),
+            self.marker_motor[1].GetPos(),
+            self.marker_motor[2].GetPos(),
+            self.marker_motor[3].GetPos()
         )
     
         # Map motor indices to force positions
         motor_to_pos_index = [0, 1, 2, 3]
     elif self.vehicle_config.vehicle_type == "x8copter":
-        # Define thrust application points
         force_positions = (
-          flight_params.force_1_5_pos,
-          flight_params.force_2_6_pos,
-          flight_params.force_3_7_pos,
-          flight_params.force_4_8_pos
+            self.marker_motor[0].GetPos(),
+            self.marker_motor[1].GetPos(),
+            self.marker_motor[2].GetPos(),
+            self.marker_motor[3].GetPos(),
+            self.marker_motor[4].GetPos(),
+            self.marker_motor[5].GetPos(),
+            self.marker_motor[6].GetPos(),
+            self.marker_motor[7].GetPos()
         )
 
         # Map motor indices to force positions
-        # motor_to_pos_index = [2, 3, 0, 1, 6, 7, 4, 5] # alternative [0, 1, 2, 3, 4, 5, 6, 7]
         motor_to_pos_index = [0, 1, 2, 3, 4, 5, 6, 7]
         
     for i, motor_idx in enumerate(motor_to_pos_index):
       force_vec = chrono.ChVectorD(0, controller.motor_thrusts[motor_idx][0], 0)
-      force_pos = force_positions[i % 4] # means (0, 1, 2, 3, 0, 1, 2, 3) or (0, 1, 2, 3)
+      # force_pos = force_positions[i % 4] # means (0, 1, 2, 3, 0, 1, 2, 3) or (0, 1, 2, 3)
+      force_pos = force_positions[i]
       print("Force motor ",motor_idx, ": ",force_vec, " N")
       self.m_frame.Accumulate_force(force_vec, force_pos, True)
 

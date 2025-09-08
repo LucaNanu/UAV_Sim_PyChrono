@@ -1,5 +1,5 @@
 # Dump hierarchy from SolidWorks 
-# Assembly: C:\Users\lucan\Desktop\OneDrive - Politecnico di Torino\NANU_THRUSTPOD\Estero\Project\Thrust_Stand_Gyro\CAD\UAV\X8 copter Inner-Outer Loop Sim v2\x8_copter_big_box.SLDASM
+# Assembly: C:\Users\lucan\Desktop\OneDrive - Politecnico di Torino\NANU_THRUSTPOD\Estero\Project\Thrust_Stand_Gyro\CAD\UAV\X8 copter Inner-Outer Loop Sim\x8_copter_big_box.SLDASM
 
 
          -Comments [CommentsFolder]
@@ -40,18 +40,6 @@
          -Axis4 [RefAxis]
          -Point8 [RefPoint]
          -Coordinate System4 [CoordSys]
-         -Axis5 [RefAxis]
-         -Point10 [RefPoint]
-         -Coordinate System5 [CoordSys]
-         -Axis6 [RefAxis]
-         -Point12 [RefPoint]
-         -Coordinate System6 [CoordSys]
-         -Axis7 [RefAxis]
-         -Point14 [RefPoint]
-         -Coordinate System7 [CoordSys]
-         -Axis8 [RefAxis]
-         -Point16 [RefPoint]
-         -Coordinate System8 [CoordSys]
    +x8_copter_big_box-1 <Default>
            -Comments [CommentsFolder]
            -Sketch5 [ProfileFeature]

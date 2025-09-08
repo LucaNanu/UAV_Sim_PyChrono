@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class MissionConfig:
   # Total simulation duration in seconds
-  simulation_duration_seconds: float = 33.2628 # 21.5
+  simulation_duration_seconds: float = 21.5 # (descent NOT included, since NOT considered with ThrustStand simulation. If one want to include descent, use 33.2628 s)
   # Run the simulator in Wrapper mode (more simulations automatically run sequentially)
   wrapper_flag: bool = False
   # If True, perform real-time rendering of the simulation with Irrlicht
@@ -62,8 +62,8 @@ class VehicleConfig:
   # model_relative_path
   # "thruststand_uav/thruststand_uav.py" 
   # "x8copter/x8copter.py"
-  # "x8copter_original/x8copter.py"
-  model_relative_path: str = "x8copter/x8copter.py"
+  # "x8copter_original/x8copter.py" NOT WORKING, TO BE INCLUDED
+  model_relative_path: str = "x8copter/x8copter"
   
   # vehicle_type
   # "thruststand_uav"

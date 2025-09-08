@@ -12,6 +12,10 @@ class Logging:
   def getOutputDir(sim_cfg: Cfg.SimulationConfig) -> str:
     controller_type = Cfg.MissionConfig.controller_type
     wrapper_flag = Cfg.MissionConfig.wrapper_flag
+    if sim_cfg.vehicle_config.vehicle_type == 'thruststand_uav':
+        uav_type = 'TS_UAV'
+    elif sim_cfg.vehicle_config.vehicle_type == 'x8copter': 
+        uav_type = 'X8'
 
     # Get current time
     now = datetime.datetime.now()
@@ -23,7 +27,7 @@ class Logging:
     if wrapper_flag:
       dir_path = os.path.join(sim_cfg.mission_config.wrapper_batch_dir)
     else:
-      dir_path = os.path.join("logs", year, month, full_date, controller_type, "workspaces")
+      dir_path = os.path.join("logs", year, month, full_date, uav_type, controller_type, "workspaces")
     os.makedirs(dir_path, exist_ok=True)  # Create all directories if not present
 
     return dir_path

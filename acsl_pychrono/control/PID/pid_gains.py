@@ -51,7 +51,6 @@ class PIDGains:
         
         self.KI_rot = np.matrix(1 * np.diag([10,10,10]))
         # **Rotational dynamics** parameters for the PI baseline controller (self.Moment_baseline_PI)       
-        # self.KP_rot_PI_baseline = np.matrix(1 * np.diag([500,50,50]))
         self.KP_rot_PI_baseline = np.matrix(1 * np.diag([500,50,50]))
         self.KI_rot_PI_baseline = np.matrix(1 * np.diag([10,10,10]))
         self.KD_rot_PI_baseline = np.matrix(0 * np.diag([1,1,1])) # not needed and set to zero

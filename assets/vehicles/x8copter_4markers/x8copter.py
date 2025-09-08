@@ -1,5 +1,5 @@
 # PyChrono script generated from SolidWorks using Chrono::SolidWorks add-in 
-# Assembly: C:\Users\lucan\Desktop\OneDrive - Politecnico di Torino\NANU_THRUSTPOD\Estero\Project\Thrust_Stand_Gyro\CAD\UAV\X8 copter Inner-Outer Loop Sim v2\x8_copter_big_box.SLDASM
+# Assembly: C:\Users\lucan\Desktop\OneDrive - Politecnico di Torino\NANU_THRUSTPOD\Estero\Project\Thrust_Stand_Gyro\CAD\UAV\X8 copter Inner-Outer Loop Sim\x8_copter_big_box.SLDASM
 
 
 import pychrono as chrono 
@@ -76,46 +76,22 @@ exported_items.append(body_1)
 marker_0_1 =chrono.ChMarker()
 marker_0_1.SetName('Coordinate System1')
 body_0.AddMarker(marker_0_1)
-marker_0_1.Impose_Abs_Coord(chrono.ChCoordsysD(chrono.ChVectorD(-0.0876060135845807,0.0329999999999994,-0.108591504360586),chrono.ChQuaternionD(1,0,0,0)))
+marker_0_1.Impose_Abs_Coord(chrono.ChCoordsysD(chrono.ChVectorD(-0.0876060135845807,-0.00850000000000125,-0.108591504360586),chrono.ChQuaternionD(1,0,0,0)))
 
 # Auxiliary marker (coordinate system feature)
 marker_0_2 =chrono.ChMarker()
 marker_0_2.SetName('Coordinate System2')
 body_0.AddMarker(marker_0_2)
-marker_0_2.Impose_Abs_Coord(chrono.ChCoordsysD(chrono.ChVectorD(0.0881269161570939,0.0329999999999994,-0.108345020493484),chrono.ChQuaternionD(1,0,0,0)))
+marker_0_2.Impose_Abs_Coord(chrono.ChCoordsysD(chrono.ChVectorD(0.0881269161570939,-0.00850000000000125,-0.108345020493483),chrono.ChQuaternionD(1,0,0,0)))
 
 # Auxiliary marker (coordinate system feature)
 marker_0_3 =chrono.ChMarker()
 marker_0_3.SetName('Coordinate System3')
 body_0.AddMarker(marker_0_3)
-marker_0_3.Impose_Abs_Coord(chrono.ChCoordsysD(chrono.ChVectorD(0.0876060135845797,0.0330000000000009,0.108591504360593),chrono.ChQuaternionD(1,0,0,0)))
+marker_0_3.Impose_Abs_Coord(chrono.ChCoordsysD(chrono.ChVectorD(0.0876060135845797,-0.00850000000000128,0.108591504360594),chrono.ChQuaternionD(1,0,0,0)))
 
 # Auxiliary marker (coordinate system feature)
 marker_0_4 =chrono.ChMarker()
 marker_0_4.SetName('Coordinate System4')
 body_0.AddMarker(marker_0_4)
-marker_0_4.Impose_Abs_Coord(chrono.ChCoordsysD(chrono.ChVectorD(-0.0881269161570941,0.0330000000000009,0.108345020493491),chrono.ChQuaternionD(1,0,0,0)))
-
-# Auxiliary marker (coordinate system feature)
-marker_0_5 =chrono.ChMarker()
-marker_0_5.SetName('Coordinate System5')
-body_0.AddMarker(marker_0_5)
-marker_0_5.Impose_Abs_Coord(chrono.ChCoordsysD(chrono.ChVectorD(-0.0876060135845719,-0.0400000000000008,-0.108591504360603),chrono.ChQuaternionD(1,0,0,0)))
-
-# Auxiliary marker (coordinate system feature)
-marker_0_6 =chrono.ChMarker()
-marker_0_6.SetName('Coordinate System6')
-body_0.AddMarker(marker_0_6)
-marker_0_6.Impose_Abs_Coord(chrono.ChCoordsysD(chrono.ChVectorD(0.0881269161571019,-0.0400000000000008,-0.108345020493465),chrono.ChQuaternionD(1,0,0,0)))
-
-# Auxiliary marker (coordinate system feature)
-marker_0_7 =chrono.ChMarker()
-marker_0_7.SetName('Coordinate System7')
-body_0.AddMarker(marker_0_7)
-marker_0_7.Impose_Abs_Coord(chrono.ChCoordsysD(chrono.ChVectorD(0.087606013584571,-0.0399999999999993,0.108591504360612),chrono.ChQuaternionD(1,0,0,0)))
-
-# Auxiliary marker (coordinate system feature)
-marker_0_8 =chrono.ChMarker()
-marker_0_8.SetName('Coordinate System8')
-body_0.AddMarker(marker_0_8)
-marker_0_8.Impose_Abs_Coord(chrono.ChCoordsysD(chrono.ChVectorD(-0.0881269161571036,-0.0399999999999993,0.108345020493474),chrono.ChQuaternionD(1,0,0,0)))
+marker_0_4.Impose_Abs_Coord(chrono.ChCoordsysD(chrono.ChVectorD(-0.0881269161570941,-0.00850000000000128,0.108345020493491),chrono.ChQuaternionD(1,0,0,0)))
