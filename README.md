@@ -32,12 +32,7 @@ Future versions of the software will include additional control systems.
 1. X8 copter Original: Original version of ACSL Lab
 2. X8 copter modified for ThrustStand project: the generated .obj file is only 1 SolidWorks Part.
 3. ThrustStand UAV
-├── src
-│   ├── main.py
-│   └── utils.py
-├── tests
-│   └── test_main.py
-└── README.md
+
 ## List of folders
 - **Images/**: Contains all project-related images.
 - **acsl_pychrono/**: Python modules or scripts related to the ACSL pychrono simulations.
