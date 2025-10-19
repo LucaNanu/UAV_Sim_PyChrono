@@ -33,6 +33,18 @@ Future versions of the software will include additional control systems.
 2. X8 copter modified for ThrustStand project: the generated .obj file is only 1 SolidWorks Part.
 3. ThrustStand UAV
 
+## List of folders
+- **Images/**: Contains all project-related images.
+- **acsl_pychrono/**: Python modules or scripts related to the ACSL pychrono simulations.
+- **assets/**: Environment and vehicle files.
+- **install/**: Installation scripts.
+- **logs/**: Logs generated during simulation for saving variables.
+- **params/**: .JSON files to generate used-defined trajectories
+- **main.py**: The main script to run the project.
+- **installation_guide.md**: Instructions for installing 
+- **History_of_Simulator.md**: Documentation of the simulator’s development history.
+- **LICENSE.txt**: License information for the project.
+
 ## Maintenance Team
 
 - [**Andrea L'Afflitto**](https://github.com/andrealaffly)
