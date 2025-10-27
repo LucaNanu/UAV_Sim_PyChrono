@@ -35,24 +35,35 @@ Future versions of the software will include additional control systems.
 
 ## List of folders
 - **acsl_pychrono/**: Python modules or scripts related to the ACSL pychrono simulations.
- - **acsl_pychrono/config**: Contains the configuration of the simulation
- - **acsl_pychrono/control**: Contains the control architecture for PID and MRAC
- - **acsl_pychrono/executor**: Includes simulator initialization to decide if a single or multiple simulations should be run
- - **acsl_pychrono/simulation**: Simulation files, with flight parameters, main loop, visualization script
- - **acsl_pychrono/user_defined_trajectory**: Different trajectory scripts for 'trajectory_type' in config.py file
+    - **acsl_pychrono/config**: Contains the configuration of the simulation
+    - **acsl_pychrono/control**: Contains the control architecture for PID and MRAC
+    - **acsl_pychrono/executor**: Includes simulator initialization to decide if a single or multiple simulations should be run
+    - **acsl_pychrono/simulation**: Simulation files, with flight parameters, main loop, visualization script
+    - **acsl_pychrono/user_defined_trajectory**: Different trajectory scripts for `trajectory_type` in config.py file
 - **assets/**: Environment and vehicle files.
-- **install/**: Installation scripts.
+    - **assets/environments**: Environment files
+    - **assets/vehicles**: UAV models generated from SolidWorks
+        - **assets/vehicles/thruststand_uav**: ThrustStand UAV files
+        - **assets/vehicles/x8_copter**: Simplifies X8-copter UAV model with 8 markers, one for each motor. Same model of ThrustStand PyChrono simulator
+        - **assets/vehicles/x8_copter_4markers**: X8-copter UAV model with 4 markers, one for each COUPLE of motors. Same model of ThrustStand PyChrono simulator
+        - **assets/vehicles/x8_copter_original**: Original X8-copter UAV model, with animation for propellers.
 - **logs/**: Logs generated during simulation for saving variables.
 - **params/**: .JSON files to generate used-defined trajectories
 - **main.py**: The main script to run the project.
-- **installation_guide.md**: Instructions for installing 
-- **History_of_Simulator.md**: Documentation of the simulator’s development history.
+- **installation_guide.md**: Instructions for installing
+- **README.md**: Instructions to use the simulator
 - **LICENSE.txt**: License information for the project.
+
+## Config parameters
+`model_relative_path`: Select the path for the required asset
+- `"thruststand_uav/thruststand_uav.py"`: ThrustStand quad-copter. `vehicle_type` should be `"thruststand_uav"`
+- `"x8copter/x8copter.py"`: X8-copter. `vehicle_type` should be `"x8copter"`
 
 ## Maintenance Team
 
 - [**Andrea L'Afflitto**](https://github.com/andrealaffly)
 - [**Mattia Gramuglia**](https://github.com/mattia-gramuglia)
+- [**Luca Nanu**](https://github.com/LucaNanu)
 
 For more information, visit [acslstack.com](https://www.acslstack.com/).
 
