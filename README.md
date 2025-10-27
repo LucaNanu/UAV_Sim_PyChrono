@@ -34,8 +34,12 @@ Future versions of the software will include additional control systems.
 3. ThrustStand UAV
 
 ## List of folders
-- **Images/**: Contains all project-related images.
 - **acsl_pychrono/**: Python modules or scripts related to the ACSL pychrono simulations.
+ - **acsl_pychrono/config**: Contains the configuration of the simulation
+ - **acsl_pychrono/control**: Contains the control architecture for PID and MRAC
+ - **acsl_pychrono/executor**: Includes simulator initialization to decide if a single or multiple simulations should be run
+ - **acsl_pychrono/simulation**: Simulation files, with flight parameters, main loop, visualization script
+ - **acsl_pychrono/user_defined_trajectory**: Different trajectory scripts for 'trajectory_type' in config.py file
 - **assets/**: Environment and vehicle files.
 - **install/**: Installation scripts.
 - **logs/**: Logs generated during simulation for saving variables.
